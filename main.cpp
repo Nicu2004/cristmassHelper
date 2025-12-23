@@ -6,6 +6,8 @@
 #include <sstream>
 #include "xorCipher.h"
 #include "diplayMenu.h"
+#include "User.h"
+#include "Gift.h"
 
 using std::cin;
 using std::cout;
@@ -17,63 +19,6 @@ using std::stringstream;
 using std::vector;
 using std::get;
 
-
-class User
-{
-    protected:
-    std::string name;
-    std::string password;
-    bool isAdmin, isActive;
-
-    public:
-    string getName()
-    {
-        return name;
-    }
-    string getPassword()
-    {
-        return password;
-    }
-    void setPassword(string pass)
-    {
-        this->password  = pass;
-    }
-    bool getStatus()
-    {
-        return isAdmin; 
-    }
-    void setStatus(bool val)
-    {
-        isActive = val;
-    }
-    bool getActivity()
-    {
-        return isActive;
-    }
-    User():name(std::move("USER")), password(std::move(xorCipher("password", 0))), isAdmin(false), isActive(false){}
-    User(string name, string password, bool isAdmin, bool isActive): name(std::move(name)), password(std::move(xorCipher(password, 10))), isAdmin(isAdmin), isActive(isActive){cout<<"NEW USER IS CREATED\n ";};
-    virtual ~User() {}
-};
-class Gift {
-public:
-
-    std::list<std::tuple<std::string, float>> jucarii;
-    std::list<std::tuple<std::string, float>> dulciuri;
-    Gift *next;
-
-    Gift(std::list<std::tuple<std::string, float>> j, std::list<std::tuple<std::string, float>> d) 
-        : jucarii(j), dulciuri(d), next(nullptr) {}
-    Gift() : next(nullptr) {}
-
-    void displayGift() {
-        std::cout << "Jucarii: ";
-        for (auto const& i : jucarii) std::cout << std::get<0>(i) << " ";
-        std::cout << "\nDulciuri: ";
-        for (auto const& i : dulciuri) std::cout << std::get<0>(i) << " ";
-        std::cout << "\n";
-    }
-    ~Gift(){delete next;};
-};
 class Kid
 {
     public:
@@ -219,6 +164,19 @@ void displayGift(Kid* kidList) {
         targetKid->giftList->displayGift();
     }
 }
+void addKidToElfList(Kid*& head, Kid* newKid)
+{
+    if (head == nullptr) {
+        head = newKid;
+        return;
+    }
+    Kid* tmp = head;
+    while(tmp->next != nullptr)
+    {
+        tmp = tmp->next;
+    }
+    tmp->next = newKid;
+}
 void AssignGiftToChild(Kid*& kidList)
 {
     string kidName;
@@ -321,7 +279,7 @@ void showReports(Kid* kidList)
 }
 //admin astuff
 list<Elf*> elfList;
-void loadElfs(list<Elf*>*&elflist)
+void loadElfs()
 {
     ifstream fff("users.txt");
     if(!fff.is_open())
@@ -341,6 +299,7 @@ void loadElfs(list<Elf*>*&elflist)
         Elf* elf = new Elf(elfName, password, status, activity, nullptr);
         elfList.push_back(elf);
     }
+    cout<<elfList.size();
 }
 int sortDataElfs(list<Elf*>&ElfList)
 {
@@ -350,6 +309,8 @@ int sortDataElfs(list<Elf*>&ElfList)
             return 1;
         return 0;
 }
+std::list<GeneralElf*> generalElfKidList;
+void readGeneralElfKidList();
 void CreateNewElf()
 {
     cout<<"Creating new Elf\n";
@@ -402,8 +363,15 @@ void disableElfAccount(){
     cout<<"Elf not found:\n";
 }
 void Raports(){
-    
+    readGeneralElfKidList();
+    list<GeneralElf*>::iterator elfItr = generalElfKidList.begin();
+    while(elfItr!=generalElfKidList.end())
+    {
+        showReports((*elfItr)->KidList);
+        elfItr++;
+    }
 }
+void saveNewElfData();
 void DoAdminStuff(User* admin)
 {
     cout<<"User is admin\n";
@@ -446,6 +414,7 @@ void doElfStuff(Elf* elf)
         }
     } while (true);
 }
+//pre use && post use
 void addNewGift(Gift*& head, Gift* newGift)
 {
     if (head == nullptr) {
@@ -459,20 +428,6 @@ void addNewGift(Gift*& head, Gift* newGift)
     }
     tmp->next = newGift;
 }
-void addKidToElfList(Kid*& head, Kid* newKid)
-{
-    if (head == nullptr) {
-        head = newKid;
-        return;
-    }
-    Kid* tmp = head;
-    while(tmp->next != nullptr)
-    {
-        tmp = tmp->next;
-    }
-    tmp->next = newKid;
-}
-std::list<GeneralElf*> generalElfKidList;
 void readGeneralElfKidList()
 {
     generalElfKidList.clear();
@@ -598,7 +553,6 @@ void writeToFile(std::list<GeneralElf*>& elfList) {
     ffc.close();
 }
 void updateGenralElfList(Elf* elf) {
-
     generalElfKidList.remove_if([&](GeneralElf* gelf) {
         if (gelf->name == elf->getName()) {
             gelf->KidList = nullptr; 
@@ -616,6 +570,16 @@ void updateGenralElfList(Elf* elf) {
     sortData(generalElfKidList);
     writeToFile(generalElfKidList); 
 }
+void saveNewElfData()
+{
+    ofstream ffg("users.txt");
+    list<Elf*>::iterator elfItr = elfList.begin();
+    while(elfItr!=elfList.end())
+    {
+        ffg<<(*elfItr)->getName()<<" "<<(*elfItr)->getPassword()<<" "<<(*elfItr)->getStatus()<<" "<<(*elfItr)->getActivity()<<std::endl;
+        elfItr++;
+    }
+}
 int main()
 {
     list<User*> users;
@@ -628,6 +592,8 @@ int main()
             if((user)->getStatus()==1)
             {
                 DoAdminStuff(user);
+                loadElfs();
+                saveNewElfData();
             }
             else{
                 if((user)->getActivity()==1) {
