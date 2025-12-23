@@ -1,0 +1,8 @@
+jdoe_dev Timmy Robot 25.0 Chocolate 5.0 Puzzle 10.0 Gummies 2.0
+jdoe_dev Sarah Doll 30.0 Lollipop 1.5
+alice_smith Elena Lego 45.0 CandyCane 2.0 Sketchbook 12.5 Marshmallows 4.0
+alice_smith Kevin YoYo 5.0 Brownie 3.0
+ethan_hunt Marcus Car 15.0 Toffee 2.5 Plane 20.0 Licorice 1.0
+ethan_hunt Sophie Bear 18.0 JellyBeans 3.5
+fiona_ogre Arthur Shield 22.0 Cookie 2.0 Sword 20.0 Mints 1.0
+george_w Billy Train 50.0 Caramel 4.0 blocks 15.0 Truffle 5.0
