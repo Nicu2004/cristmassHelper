@@ -82,8 +82,6 @@ void loadElfs()
     
     for (User* u : usersList) 
     {
-        // Use u->getName() if it's a private member with a getter
-        // or u->nume if it's public as seen in your previous Elf header
         cout << "- " << u->getName() << "\n"; 
     }
 }
