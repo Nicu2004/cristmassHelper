@@ -8,6 +8,9 @@
 #include "diplayMenu.h"
 #include "User.h"
 #include "Gift.h"
+#include "Kid.h"
+#include "Elf.h"
+#include "giftActions.h"
 
 using std::cin;
 using std::cout;
@@ -19,234 +22,6 @@ using std::stringstream;
 using std::vector;
 using std::get;
 
-class Kid
-{
-    public:
-        Gift*giftList;
-        string name;
-        Kid* next;
-        Kid(string name, Gift *giftList): name(move(name)), giftList(giftList),next(nullptr){}
-        Kid(): name("NULL"), giftList(nullptr), next(nullptr){};
-        void displayData()
-        {
-            cout<<"Kid's name: "<<name;
-            if(giftList!=nullptr)
-            {
-                giftList->displayGift();
-            }
-            else
-            {
-                cout<<"No data to be displayed\n";
-            }
-        }
-        ~Kid(){
-            delete giftList;
-        }
-};
-class Elf: public User
-{
-    public:
-        Kid* kidList;
-        Elf(): kidList(nullptr),User(){}
-        Elf(string nume, string password, bool isAdmin, bool isActive, Kid* kidList):User(nume, xorCipher(password, 10), false, true), kidList(kidList){}
-        virtual~Elf(){delete kidList;};
-};
-class GeneralElf
-{
-    public:
-    string name;
-    Kid* KidList;
-    GeneralElf(string name, Kid* KidList):name(name), KidList(KidList){}
-    virtual ~GeneralElf(){delete KidList;}
-};
-User* logInUser(std::list<User*>& users)
-{
-    std::ifstream fff("users.txt");
-    if(!fff)
-    {
-        std::cout << "NO FILE COULD BE OPENED";
-        return nullptr;
-    }
-
-    std::string username;
-    std::cout << "ENTER USERNAME: ";
-    std::getline(std::cin, username);
-
-    std::string data;
-    while(std::getline(fff, data))
-    {
-        std::stringstream ss(data);
-        std::string name, StoredPassword, inputPassword;
-        bool isAdmin, isActive;
-
-        if (ss >> name >> StoredPassword >> isAdmin >> isActive) 
-        {
-            if(username == name)
-            {
-                std::cout << "ENTER PASSWORD: ";
-                SetStdinEcho(false);
-                cout<<xorCipher(StoredPassword, 10)<<std::endl;
-                std::getline(std::cin, inputPassword);
-                SetStdinEcho(true);
-                std::cout << std::endl;
-
-                
-                if(StoredPassword == xorCipher(inputPassword, 10))
-                {
-                    fff.close();
-                    return new User(name, inputPassword, isAdmin, isActive);
-                }
-                else {
-                    std::cout << "Password incorrect\n";
-                    fff.close();
-                    return nullptr;
-                }
-            }
-        }
-    }
-
-    fff.close();
-    return nullptr; 
-}
-Gift* deleteGiftAtPos(Gift* head, int position) {
-    if (!head || position < 1) return head;
-
-    if (position <= head->jucarii.size()) {
-        auto it = head->jucarii.begin();
-        std::advance(it, position - 1);
-        head->jucarii.erase(it);
-    }
-    if (position <= head->dulciuri.size()) {
-        auto it = head->dulciuri.begin();
-        std::advance(it, position - 1);
-        head->dulciuri.erase(it);
-    }
-
-    return head;
-}
-Kid* searchKid(Kid* listHead, string name)
-{
-    while(listHead!=nullptr)
-    {
-        if(name.compare(listHead->name)==0)
-        {
-            return listHead;
-        }
-        listHead = listHead->next;
-    }
-    return nullptr;
-}
-void removeGift(Kid* kidList) {   
-    std::string name;
-    std::cout << "Enter kid's name: ";
-    std::getline(std::cin >> std::ws, name);
-    
-    // Now searchKid is visible because Kid.h was included above
-    Kid* targetKid = searchKid(kidList, name);
-    if (targetKid != nullptr) {
-        // Now the compiler knows what 'giftList' is because Kid.h is fully loaded
-        if (targetKid->giftList != nullptr) {
-            targetKid->giftList->displayGift();
-            int opt;
-            std::cout << "Enter option to delete: ";
-            std::cin >> opt;
-            targetKid->giftList = deleteGiftAtPos(targetKid->giftList, opt);
-            std::cout << "Gift deleted successfully\n";
-        }
-    }
-}
-void displayGift(Kid* kidList) {
-    std::string name;
-    std::cout << "Enter kid's name: ";
-    std::getline(std::cin >> std::ws, name);
-    Kid* targetKid = searchKid(kidList, name);
-    if (targetKid != nullptr && targetKid->giftList != nullptr) {
-        targetKid->giftList->displayGift();
-    }
-}
-void addKidToElfList(Kid*& head, Kid* newKid)
-{
-    if (head == nullptr) {
-        head = newKid;
-        return;
-    }
-    Kid* tmp = head;
-    while(tmp->next != nullptr)
-    {
-        tmp = tmp->next;
-    }
-    tmp->next = newKid;
-}
-void AssignGiftToChild(Kid*& kidList)
-{
-    string kidName;
-    cout << "Enter Kid's name: ";
-    getline(cin >> std::ws, kidName);
-
-    Kid* targetKid = searchKid(kidList, kidName);
-   if(targetKid==nullptr) {
-        cout << "Kid not found. Creating new kid\n";
-        targetKid = new Kid(kidName, new Gift());
-        addKidToElfList(kidList, targetKid);
-    }
-    if (targetKid->giftList == nullptr) {
-        targetKid->giftList = new Gift();
-    }
-    int noOfToys;
-    cout << "Enter number of Toys: ";
-    cin >> noOfToys;
-    for(int i = 0; i < noOfToys; i++) {
-        string tName;
-        float tPrice;
-        cout << "Toy " << i+1 << " name: ";
-        cin >> tName;
-        cout << "Toy " << i+1 << " price: ";
-        cin >> tPrice;
-        targetKid->giftList->jucarii.push_back(std::make_tuple(tName, tPrice));
-    }
-    int noOfSweets;
-    cout << "Enter number of Sweets: ";
-    cin >> noOfSweets;
-    for(int i = 0; i < noOfSweets; i++) {
-        string sName;
-        float sPrice;
-        cout << "Sweet " << i+1 << " name: ";
-        cin >> sName;
-        cout << "Sweet " << i+1 << " price: ";
-        cin >> sPrice;
-        targetKid->giftList->dulciuri.push_back(std::make_tuple(sName, sPrice));
-    }
-    cout << "Gifts assigned successfully.\n";
-}
-void ListChildrenWithGifts(Kid* KidList)
-{
-    while(KidList!=nullptr)
-    {
-        cout<<KidList->name;
-        Gift* giftList = KidList->giftList;
-        while(giftList!=nullptr)
-        {
-            giftList->displayGift();
-            giftList = giftList->next;
-        }
-        KidList = KidList->next;
-    }
-}
-void displayKid(Kid* kid)
-{
-    string name;
-    cout<<"Enter child's Name: \n";
-    cin>>name;
-    cin.ignore(1000, '\n');
-    Kid *targetKid = searchKid(kid, name);
-    if(targetKid!=nullptr)
-    {
-        targetKid->displayData();
-    }
-    else{
-        cout<<"No kid found\n";
-    }
-}
 void showReports(Kid* kidList)
 {
     Kid* tmp = kidList;
@@ -278,7 +53,9 @@ void showReports(Kid* kidList)
         }
 }
 //admin astuff
-list<Elf*> elfList;
+
+
+list<User*> usersList;
 void loadElfs()
 {
     ifstream fff("users.txt");
@@ -296,16 +73,25 @@ void loadElfs()
         int status;
         int activity;
         ss>>elfName>>password>>status>>activity;
-        Elf* elf = new Elf(elfName, password, status, activity, nullptr);
-        elfList.push_back(elf);
+        cout<<elfName<<"\n";
+        User* user = new User(elfName, password, status, activity);
+        usersList.push_back(user);
     }
-    cout<<elfList.size();
+    cout << "\nTotal users loaded: " << usersList.size() << std::endl;
+    cout << "List of names:\n";
+    
+    for (User* u : usersList) 
+    {
+        // Use u->getName() if it's a private member with a getter
+        // or u->nume if it's public as seen in your previous Elf header
+        cout << "- " << u->getName() << "\n"; 
+    }
 }
-int sortDataElfs(list<Elf*>&ElfList)
+int sortDataElfs(list<User*>&UserList)
 {
-    ElfList.sort([](Elf * entr1, Elf* entr2){
+    UserList.sort([](User* entr1, User* entr2){
         return entr1->getName()<entr2->getName();});
-        if(&ElfList)
+        if(&UserList)
             return 1;
         return 0;
 }
@@ -318,21 +104,22 @@ void CreateNewElf()
     cout<<"Enter Elf's name: ";
     cin>>name;
     string password;
-    cout<<"Enter elf;s password: ";
+    cout<<"Enter elfs password: ";
     cin>>password;
-    Elf* elf = new Elf(name, xorCipher(password, 10), false, true, nullptr);//by default the elf's account will be enabled, on the way this can be disabled
-    elfList.push_back(elf);
+    User* elf = new User(name, xorCipher(password, 10), false, true);//by default the elf's account will be enabled, on the way this can be disabled
+    usersList.push_back(elf);
     cout<<"New Elf Created";
-    if(sortDataElfs(elfList)==1)
+    if(sortDataElfs(usersList)==1)
     {
         cout<<"Sorted\n";
     }
 }
 void ChangeExistingElfPassword(){
     string name;
-    cout<<"Enter elf name";
-    list<Elf*>::iterator elfItr = elfList.begin();
-    while(elfItr!=elfList.end())
+    cout<<"Enter elf name: ";
+    cin>>name;
+    list<User*>::iterator elfItr = usersList.begin();
+    while(elfItr!=usersList.end())
     {
         if(name.compare((*elfItr)->getName())==0)
         {
@@ -350,8 +137,8 @@ void ChangeExistingElfPassword(){
 void disableElfAccount(){
     string name;
     cout<<"Enter elf name";
-    list<Elf*>::iterator elfItr = elfList.begin();
-    while(elfItr!=elfList.end())
+    list<User*>::iterator elfItr = usersList.begin();
+    while(elfItr!=usersList.end())
     {
         if(name.compare((*elfItr)->getName())==0)
         {
@@ -514,8 +301,8 @@ void readKidList(Elf* elf)
         }
         elfItr++;
    }
-   cout<<"COULD NOT FIND THE ELF;";
-   exit(1);
+   cout<<"ELF HAS NO KIDS\n";
+
 }
 int sortData(list<GeneralElf*> generalElfKidList)
 {
@@ -573,8 +360,8 @@ void updateGenralElfList(Elf* elf) {
 void saveNewElfData()
 {
     ofstream ffg("users.txt");
-    list<Elf*>::iterator elfItr = elfList.begin();
-    while(elfItr!=elfList.end())
+    list<User*>::iterator elfItr = usersList.begin();
+    while(elfItr!=usersList.end())
     {
         ffg<<(*elfItr)->getName()<<" "<<(*elfItr)->getPassword()<<" "<<(*elfItr)->getStatus()<<" "<<(*elfItr)->getActivity()<<std::endl;
         elfItr++;
@@ -591,9 +378,10 @@ int main()
         {
             if((user)->getStatus()==1)
             {
-                DoAdminStuff(user);
                 loadElfs();
+                DoAdminStuff(user);
                 saveNewElfData();
+                delete(user);
             }
             else{
                 if((user)->getActivity()==1) {
