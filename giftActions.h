@@ -32,11 +32,9 @@ void removeGift(Kid* kidList) {
     std::string name;
     std::cout << "Enter kid's name: ";
     std::getline(std::cin >> std::ws, name);
-    
-    // Now searchKid is visible because Kid.h was included above
+
     Kid* targetKid = searchKid(kidList, name);
     if (targetKid != nullptr) {
-        // Now the compiler knows what 'giftList' is because Kid.h is fully loaded
         if (targetKid->giftList != nullptr) {
             targetKid->giftList->displayGift();
             int opt;
