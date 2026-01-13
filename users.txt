@@ -1,6 +1,6 @@
 Taskos zfg;89 0 1
+Vlad 987654321 0 1
 admin_user :h::;:;8;i=8=;=: 1 1
-jdoe_dev :2:o:?:>;99o9? 0 1
 alice_smith ;i:o:2:8:>;9:n:::l:? 0 1
 bob_builder :n:2;39o:2;?9o9393 0 0
 charlie_br ;2:l:o:o;;;29o:=:::l 0 0
@@ -9,3 +9,4 @@ ethan_hunt :8:i;;:o;8;8:2:9:9:n:>9: 0 1
 fiona_ogre ;2;<:::i;;9o:n:2:=:> 0 1
 george_w :2;>;9:2:o:<:>9o:8::;? 0 1
 hannah_m :3:>:l:l:::39o:i9o:=:> 0 0
+jdoe_dev :2:o:?:>;99o9? 0 1
